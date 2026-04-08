@@ -1,43 +1,41 @@
-from flask import Blueprint, redirect, url_for, flash
-from flask_dance.contrib.google import make_google_blueprint, google
+from flask import Blueprint, redirect, flash
 from flask_login import login_user, logout_user, login_required
-from extensions import db
-
-from models.user import User
 
 auth = Blueprint('auth', __name__)
 
-google_bp = make_google_blueprint(
-    client_id=None,
-    client_secret=None,
-    scope=["profile", "email"],
-    redirect_url="/login/google/authorized"
-)
-
 @auth.route('/login')
 def login():
-    return redirect(url_for('google.login'))
+    from flask_dance.contrib.google import google
+    if not google.authorized:
+        return redirect('/login/google')
+    return redirect('/')
 
 @auth.route('/login/google/authorized')
 def google_authorized():
+    from flask_dance.contrib.google import google
+    from app import db
+    from models.user import User
+
+    print('=== GOOGLE AUTHORIZED ROUTE HIT ===')
+
+
     if not google.authorized:
         flash('Failed to log in with Google.', 'danger')
-        return redirect(url_for('auth.login'))
+        return redirect('/')
 
     resp = google.get('/oauth2/v2/userinfo')
     if not resp.ok:
-        flash('Failed to fetch user info from Google.', 'danger')
-        return redirect(url_for('auth.login'))
+        flash('Failed to fetch user info.', 'danger')
+        return redirect('/')
 
     info = resp.json()
     email = info['email']
     first_name = info.get('given_name', '')
     last_name = info.get('family_name', '')
 
-    # Check if user already exists
-    user = User.query.filter_by(email=email).first()
+    print(f'GOOGLE INFO: {email}, {first_name} {last_name}')
 
-    # If not, create them automatically
+    user = User.query.filter_by(email=email).first()
     if not user:
         user = User(
             first_name=first_name,
@@ -48,12 +46,14 @@ def google_authorized():
         )
         db.session.add(user)
         db.session.commit()
+        print('NEW USER CREATED')
 
     login_user(user)
-    return redirect(url_for('home'))
+    print('LOGGED IN:', user)
+    return redirect('/')
 
 @auth.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('auth.login'))
+    return redirect('/')
