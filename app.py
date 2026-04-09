@@ -1,6 +1,5 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, current_user
 from dotenv import load_dotenv
 import os
@@ -14,7 +13,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'auth.login'
 
@@ -28,13 +26,6 @@ def home():
     return render_template('Quanticle.html', user=current_user)
 
 with app.app_context():
-    from flask_dance.contrib.google import make_google_blueprint
-    google_bp = make_google_blueprint(
-        client_id=os.getenv('GOOGLE_CLIENT_ID'),
-        client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
-        scope=["openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
-    )
-    app.register_blueprint(google_bp, url_prefix='/login')
     from routes.auth import auth
     app.register_blueprint(auth)
     from models.user import User
