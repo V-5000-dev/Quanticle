@@ -60,7 +60,7 @@ def google_login():
 
 @auth.route('/login/callback')
 def google_callback():
-    from app import db
+    from extensions import db
     from models.user import User
 
     try:
@@ -87,16 +87,14 @@ def google_callback():
         if not user:
             user = User(
                 first_name=first_name,
-                last_name=last_name,
+                 last_name=last_name,
                 email=email,
-                password='',
-                role='user'
-            )
+)
             db.session.add(user)
             db.session.commit()
             print('=== NEW USER CREATED ===')
 
-        login_user(user)
+        login_user(user, remember=True)
         print(f'=== LOGGED IN: {user} ===')
         return redirect('/')
 
