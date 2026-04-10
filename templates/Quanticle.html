@@ -334,7 +334,7 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
   <span>Hi, {{ user.first_name }}! 👋</span>
   <a href="/logout">Sign out</a>
 {% else %}
-  <a href="/login/google">Sign in</a>
+<a href="/login/google">{% if user.is_authenticated %}{{ user.first_name }}{% else %}Sign in{% endif %}</a>
 {% endif %}
 <a href="/login/google">Get started free</a>
 
@@ -698,7 +698,7 @@ function showPage(page) {
     lp.classList.remove('active');
     ap.classList.add('active','fade-in');
     ap.addEventListener('animationend', () => ap.classList.remove('fade-in'), {once:true});
-    document.title = 'Quanticle \u2014 Sign In';
+    document.title = 'Quanticle \u2014 {% if user.is_authenticated %}{{ user.first_name }}{% else %}Sign In{% endif %}';
     window.scrollTo(0,0);
     resetAuth();
     authTab(pendingTab);
