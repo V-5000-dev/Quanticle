@@ -318,8 +318,6 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
 </style>
 </head>
 <body>
-  <p>DEBUG: {{ user.is_authenticated }} — {{ user }}</p>
-  {{ user.first_name }} {{ user.email }} {{ user.is_authenticated }}
 
 <!-- ═══ LANDING PAGE ═══ -->
 <div id="landingPage" class="page active">
@@ -334,7 +332,7 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
   <span>Hi, {{ user.first_name }}! 👋</span>
   <a href="/logout">Sign out</a>
 {% else %}
-<a href="/login/google">{% if user.is_authenticated %}{{ user.first_name }}{% else %}Sign in{% endif %}</a>
+<span class="blbl">Sign in with Google</span>
 {% endif %}
 <a href="/login/google">Get started free</a>
 
@@ -349,8 +347,8 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
     <li><a href="javascript:void(0)" onclick="scrollSec('faq')">FAQ</a></li>
   </ul>
   <div class="ncta">
-    <button class="btn-ghost" onclick="goAuth('login')">Sign in</button>
-    <button class="btn-nav"   onclick="goAuth('signup')">Get started free</button>
+    <button class="btn-ghost" onclick="goAuth('login')">{% if user.is_authenticated %}Hello, {{ user.first_name }}{% else %}Sign in{% endif %}</button>
+    
   </div>
   <button class="hamburger" onclick="openMM()">
     <span></span><span></span><span></span>
@@ -512,6 +510,7 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
     <h2>Start your research journey today.</h2>
     <p>Free to use. No credit card. No experience required. Just curiosity.</p>
     <div class="cta-acts">
+      
       <button class="btn-white" onclick="goAuth('signup')">Get started free<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M8 4l3 3-3 3"/></svg></button>
       <button class="btn-owht" onclick="scrollSec('how')">See how it works</button>
     </div>
@@ -524,7 +523,7 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
     <p>AI-powered insights for smarter lab research. Built for the next generation of scientists.</p>
   </div>
   <div class="fcol"><h4>Product</h4><a onclick="navTo('features')">Features</a><a onclick="navTo('how')">How it Works</a><a onclick="navTo('reviews')">Reviews</a><a onclick="navTo('faq')">FAQ</a></div>
-  <div class="fcol"><h4>Account</h4><a onclick="goAuth('login')">Sign in</a><a onclick="goAuth('signup')">Create account</a></div>
+  <div class="fcol"><h4>Account</h4><a onclick="goAuth('login')">Sign in</a>
   <div class="fcol"><h4>Legal</h4><a>Privacy Policy</a><a>Terms of Service</a><a>Security</a></div>
 </footer>
 <div class="fbot"><p>&#169; 2025 Quanticle, Inc. All rights reserved.</p><p>Made for curious minds everywhere.</p></div>
@@ -544,12 +543,7 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
   <div class="achd">
     <div class="abrand"><svg width="24" height="24" viewBox="0 0 26 26" fill="none"><ellipse cx="13" cy="13" rx="5" ry="11" stroke="currentColor" stroke-width="1.7"/><ellipse cx="13" cy="13" rx="11" ry="5" stroke="currentColor" stroke-width="1.7"/><circle cx="13" cy="13" r="2.4" fill="currentColor"/></svg></div>
     <div class="atitle" id="aTitle">Welcome back</div>
-    <div class="asub"   id="aSub">Sign in to continue your research journey</div>
-  </div>
-
-  <div class="atabs">
-    <button class="atab active" id="tabLogin"  onclick="authTab('login')">Sign in</button>
-    <button class="atab"        id="tabSignup" onclick="authTab('signup')">Create account</button>
+    <div class="asub" id="aSub">Sign in to continue your research journey</div>
   </div>
 
   <!-- LOGIN -->
@@ -568,7 +562,7 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
             <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
           </svg>
-          <span class="blbl">Sign in with Google</span>
+          <span class="blbl">{% if user.is_authenticated %} {% else %}Sign in with Google {% endif %}</span>
         </a>
       {% endif %}
     </div>
