@@ -347,8 +347,8 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
     <li><a href="javascript:void(0)" onclick="scrollSec('faq')">FAQ</a></li>
   </ul>
   <div class="ncta">
+    <button class="btn-sec" onclick="goTester()">Join as tester</button>
     <button class="btn-ghost" onclick="goAuth('login')">{% if user.is_authenticated %}Hello, {{ user.first_name }}{% else %}Sign in{% endif %}</button>
-    
   </div>
   <button class="hamburger" onclick="openMM()">
     <span></span><span></span><span></span>
@@ -670,7 +670,80 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
 </div>
 
 </div><!-- /authPage -->
+<!-- ═══ TESTER SIGNUP PAGE ═══ -->
+<div id="testerPage" class="page">
 
+  <nav id="tNav">
+    <button class="alogo" onclick="goLanding()"><span class="alogo-dot"></span>Quanticle</button>
+    <button class="back-btn" onclick="goLanding()"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11L5 7l4-4"/></svg>Back to home</button>
+  </nav>
+
+  <main class="amain">
+  <div class="acard" id="testerCard">
+    <div class="achd">
+      <div class="abrand"><svg width="24" height="24" viewBox="0 0 26 26" fill="none"><ellipse cx="13" cy="13" rx="5" ry="11" stroke="currentColor" stroke-width="1.7"/><ellipse cx="13" cy="13" rx="11" ry="5" stroke="currentColor" stroke-width="1.7"/><circle cx="13" cy="13" r="2.4" fill="currentColor"/></svg></div>
+      <div class="atitle">Join as a tester</div>
+      <div class="asub">Get early access and help shape Quanticle&#8217;s future.</div>
+    </div>
+
+    <div id="tPanel">
+      <div class="aform">
+        <div class="afield">
+          <label for="tName">Contact Name</label>
+          <div class="ainwrap">
+            <span class="ail"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3.5"/><path d="M2.5 18c0-4.14 3.36-7.5 7.5-7.5s7.5 3.36 7.5 7.5"/></svg></span>
+            <input type="text" id="tName" placeholder="John S." autocomplete="name">
+          </div>
+          <span class="aerr" id="tNameErr"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 4a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 018 5zm0 6.5a.875.875 0 110-1.75.875.875 0 010 1.75z"/></svg>Required.</span>
+        </div>
+
+        <div class="afield">
+          <label for="tEmail">Email address</label>
+          <div class="ainwrap">
+            <span class="ail"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="16" height="13" rx="2"/><path d="M2 7l8 5 8-5"/></svg></span>
+            <input type="email" id="tEmail" placeholder="you@university.edu" autocomplete="email">
+          </div>
+          <span class="aerr" id="tEmailErr"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 4a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 018 5zm0 6.5a.875.875 0 110-1.75.875.875 0 010 1.75z"/></svg>Please enter a valid email.</span>
+        </div>
+
+        <div class="afield">
+          <label for="tField">Research field</label>
+          <div class="ainwrap">
+            <span class="ail"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2L2 7l8 5 8-5-8-5z"/><path d="M2 13.5l8 5 8-5"/><path d="M2 10l8 5 8-5"/></svg></span>
+            <input type="text" id="tField" placeholder="e.g. Neuroscience, Economics, Computer Science">
+          </div>
+          <span class="aerr" id="tFieldErr"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 4a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 018 5zm0 6.5a.875.875 0 110-1.75.875.875 0 010 1.75z"/></svg>Required.</span>
+        </div>
+
+        <div class="afield">
+          <label for="tWhy">Why do you want to test Quanticle? <span class="opt">(optional)</span></label>
+          <div class="ainwrap" style="align-items:flex-start">
+            <span class="ail" style="padding-top:10px"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3H3a1 1 0 00-1 1v10a1 1 0 001 1h5l3 3 3-3h3a1 1 0 001-1V4a1 1 0 00-1-1z"/></svg></span>
+            <textarea id="tWhy" placeholder="Tell us about your research goals&#8230;" rows="3" style="resize:vertical;padding:9px 10px 9px 36px;font-family:inherit;font-size:0.875rem;line-height:1.5;width:100%;box-sizing:border-box;border:none;background:transparent;outline:none;color:inherit"></textarea>
+          </div>
+        </div>
+
+        <button class="asubmit" id="testerBtn" type="button" onclick="handleTester()"><span class="blbl">Apply for early access</span><div class="bspin"></div></button>
+      </div>
+      <div class="aswitch">Already have an account? <button onclick="goAuth('login')">Sign in</button></div>
+    </div>
+
+    <div class="asuccess" id="testerSuccess">
+      <div class="sring"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14l7 7L23 7"/></svg></div>
+      <div class="sti">Application received!</div>
+      <div class="sde">We&#8217;ll be in touch when your spot opens up.</div>
+      <div class="rbar"><div class="rfill" id="trfill"></div></div>
+      <button class="dbtn" onclick="goLanding()">Back to home<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M8 4l3 3-3 3"/></svg></button>
+    </div>
+  </div>
+  </main>
+
+  <div class="aproof">
+    <div class="apitem"><span class="apdot"></span>Early access &#8212; limited spots</div>
+    <div class="apitem"><span class="apdot"></span>Your feedback shapes the product</div>
+  </div>
+
+</div><!-- /testerPage -->
 <script>
 'use strict';
 
@@ -679,8 +752,12 @@ footer{padding:56px 48px 32px;max-width:1200px;margin:0 auto;display:grid;grid-t
 if (window.location.hash === '#auth') {
   document.getElementById('landingPage').classList.remove('active');
   document.getElementById('authPage').classList.add('active');
-  // curPage will be set by showPage below
+} else if (window.location.hash === '#tester') {
+  document.getElementById('landingPage').classList.remove('active');
+  document.getElementById('testerPage').classList.add('active');
 }
+  // curPage will be set by showPage below
+
 let curPage = 'landing';
 let pendingTab = 'login';
 let pendingScrollId = null;
@@ -688,36 +765,43 @@ let pendingScrollId = null;
 function showPage(page) {
   const lp = document.getElementById('landingPage');
   const ap = document.getElementById('authPage');
+  const tp = document.getElementById('testerPage');
+  [lp, ap, tp].forEach(p => p.classList.remove('active'));
+
   if (page === 'auth') {
-    lp.classList.remove('active');
     ap.classList.add('active','fade-in');
     ap.addEventListener('animationend', () => ap.classList.remove('fade-in'), {once:true});
-    document.title = 'Quanticle \u2014 {% if user.is_authenticated %}{{ user.first_name }}{% else %}Sign In{% endif %}';
-    window.scrollTo(0,0);
-    resetAuth();
-    authTab(pendingTab);
-    curPage = 'auth';
+    document.title = 'Quanticle \u2014 Sign In';
+    window.scrollTo(0,0); resetAuth(); authTab(pendingTab); curPage = 'auth';
+    history.pushState({page}, '', '#auth');
+  } else if (page === 'tester') {
+    tp.classList.add('active','fade-in');
+    tp.addEventListener('animationend', () => tp.classList.remove('fade-in'), {once:true});
+    document.title = 'Quanticle \u2014 Join as Tester';
+    window.scrollTo(0,0); resetTester(); curPage = 'tester';
+    history.pushState({page}, '', '#tester');
   } else {
-    ap.classList.remove('active');
     lp.classList.add('active','fade-in');
     lp.addEventListener('animationend', () => lp.classList.remove('fade-in'), {once:true});
     document.title = 'Quanticle \u2014 AI-Powered Research Intelligence';
-    window.scrollTo(0,0);
-    curPage = 'landing';
+    window.scrollTo(0,0); curPage = 'landing';
     setTimeout(initReveals, 80);
-    if (pendingScrollId) { const sid = pendingScrollId; pendingScrollId = null; setTimeout(() => scrollSec(sid), 120); }
+    if (pendingScrollId) { const sid=pendingScrollId; pendingScrollId=null; setTimeout(()=>scrollSec(sid),120); }
+    history.pushState({page}, '', '#'); 
   }
-  history.pushState({page}, '', page === 'auth' ? '#auth' : '#');
 }
 
 function goAuth(tab) { pendingTab = tab || 'login'; closeMM(); showPage('auth'); }
 function goLanding()  { showPage('landing'); }
 
 window.addEventListener('popstate', e => {
-  const target = (e.state && e.state.page) ? e.state.page : (location.hash === '#auth' ? 'auth' : 'landing');
+  const hash = location.hash;
+  const target = (e.state && e.state.page) ? e.state.page
+    : hash === '#auth' ? 'auth'
+    : hash === '#tester' ? 'tester'
+    : 'landing';
   showPage(target);
 });
-
 /* ─── LANDING ─── */
 const lNav = document.getElementById('lNav');
 window.addEventListener('scroll', () => { lNav.classList.toggle('scrolled', window.scrollY > 12); });
@@ -923,6 +1007,78 @@ document.addEventListener('keydown', e => {
   if (document.getElementById('fovl').classList.contains('open')) { handleForgot(); return; }
   if (activeTab === 'login') handleLogin(); else handleSignup();
 });
+
+/* ─── TESTER SIGNUP ─── */
+function goTester() { closeMM(); showPage('tester'); }
+
+function resetTester() {
+  ['tName','tEmail','tField','tWhy'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.querySelectorAll('#testerPage .aerr').forEach(e => e.classList.remove('show'));
+  document.querySelectorAll('#testerPage .ainwrap input').forEach(i => i.classList.remove('err'));
+  document.getElementById('testerSuccess').classList.remove('show');
+  document.getElementById('tPanel').style.display = '';
+  const tb = document.getElementById('testerBtn');
+  if (tb) { tb.classList.remove('loading'); tb.disabled = false; }
+  const trf = document.getElementById('trfill');
+  trf.style.transition = 'none';
+  trf.style.width = '0%';
+}
+
+function handleTester() {
+  const ok1 = setErr('tName',  'tNameErr',  document.getElementById('tName').value.trim().length > 0);
+  const ok2 = setErr('tEmail', 'tEmailErr', isEmail(document.getElementById('tEmail').value));
+  const ok3 = setErr('tField', 'tFieldErr', document.getElementById('tField').value.trim().length > 0);
+  if (!ok1 || !ok2 || !ok3) return;
+
+  setLoad('testerBtn', true);
+
+  const payload = {
+    name:  document.getElementById('tName').value.trim(),
+    email: document.getElementById('tEmail').value.trim(),
+    field: document.getElementById('tField').value.trim(),
+    why:   document.getElementById('tWhy').value.trim()
+  };
+
+  fetch('https://script.google.com/macros/s/AKfycbwIpXNS8ZJBLvWv1V9EhFEv1nVRvqpUleweZ3BnuZn1hXDp6kHRnaMoAgWMn8PvX8Up/exec', {
+  method: 'POST',
+  mode: 'no-cors',
+  body: JSON.stringify(payload)
+})
+  .then(() => {
+    setLoad('testerBtn', false);
+    document.getElementById('tPanel').style.display = 'none';
+    document.getElementById('testerSuccess').classList.add('show');
+    const trf = document.getElementById('trfill');
+    trf.style.transition = 'none';
+    trf.style.width = '0%';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      trf.style.transition = 'width 2s linear';
+      trf.style.width = '100%';
+    }));
+    setTimeout(() => goLanding(), 2300);
+  })
+  .catch(() => {
+    setLoad('testerBtn', false);
+    alert('Something went wrong. Please try again.');
+  });
+}
+
+/* Real-time email validation — attached after DOM is ready */
+document.addEventListener('DOMContentLoaded', () => {
+  const tEl = document.getElementById('tEmail');
+  if (tEl) {
+    tEl.addEventListener('blur',  () => {
+      if (tEl.value.length > 0 && !isEmail(tEl.value)) setErr('tEmail', 'tEmailErr', false);
+    });
+    tEl.addEventListener('input', () => {
+      if (tEl.classList.contains('err') && isEmail(tEl.value)) setErr('tEmail', 'tEmailErr', true);
+    });
+  }
+});
+
 </script>
 </body>
 </html>
