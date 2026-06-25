@@ -562,9 +562,10 @@ async function refreshOrgDetail() {
   const container = document.getElementById('orgDetailContent');
   container.innerHTML = '<p class="muted">Loading…</p>';
 
-  const [{ data: orgs, error: orgsError }, { data: members, error: membersError }] = await Promise.all([
+  const [{ data: orgs, error: orgsError }, { data: members, error: membersError }, { data: transfer }] = await Promise.all([
     supabaseClient.rpc('get_my_organizations'),
-    supabaseClient.rpc('get_organization_members', { p_org_id: currentOrgId })
+    supabaseClient.rpc('get_organization_members', { p_org_id: currentOrgId }),
+    supabaseClient.rpc('get_org_transfer_request', { p_org_id: currentOrgId })
   ]);
 
   if (orgsError) {
@@ -583,10 +584,10 @@ async function refreshOrgDetail() {
     return;
   }
 
-  renderOrgDetail(org, members || []);
+  renderOrgDetail(org, members || [], transfer && transfer.length > 0 ? transfer[0] : null);
 }
 
-function renderOrgDetail(org, members) {
+function renderOrgDetail(org, members, transfer) {
   const container = document.getElementById('orgDetailContent');
   const renamedAt = new Date(org.renamed_at);
   const canRenameNow = (Date.now() - renamedAt.getTime()) >= 30 * 24 * 60 * 60 * 1000;
@@ -598,15 +599,14 @@ function renderOrgDetail(org, members) {
     <span class="badge ${org.is_owner ? 'owner' : ''}">${escapeHtml(org.role)}</span>
     ${org.description ? `<p class="muted" style="margin-top:10px; max-width:280px;">${escapeHtml(org.description)}</p>` : ''}
     <p class="small-muted">${org.member_count} member${org.member_count === 1 ? '' : 's'}</p>
-
-    <div class="section-divider"></div>
-    <div class="section-label">Invite code</div>
-    <div class="invite-code-box">${escapeHtml(org.invite_code)}</div>
-    <button class="full-width-btn" onclick="navigator.clipboard.writeText('${org.invite_code}')">Copy code</button>
   `;
 
   if (org.is_owner) {
     html += `
+      <div class="section-divider"></div>
+      <div class="section-label">Invite code</div>
+      <div class="invite-code-box">${escapeHtml(org.invite_code)}</div>
+      <button class="full-width-btn" onclick="navigator.clipboard.writeText('${org.invite_code}')">Copy code</button>
       <button class="full-width-btn" onclick="handleRegenerateCode()">Regenerate invite code</button>
 
       <div class="section-divider"></div>
@@ -621,7 +621,7 @@ function renderOrgDetail(org, members) {
 
       <div class="section-divider"></div>
       <div class="section-label">Transfer ownership</div>
-      ${renderTransferSection(members)}
+      ${renderTransferSection(members, transfer)}
 
       <div class="section-divider"></div>
       <div class="section-label">Delete organization</div>
@@ -631,6 +631,19 @@ function renderOrgDetail(org, members) {
       </div>
     `;
   } else {
+    // Check if there's a pending transfer TO this user
+    const incomingTransfer = transfer && transfer.to_user_id === (currentUser && currentUser.id);
+    if (incomingTransfer) {
+      html += `
+        <div class="section-divider"></div>
+        <div class="section-label">Ownership transfer request</div>
+        <p class="small-muted">${escapeHtml(transfer.from_email)} has offered you ownership of this organization.</p>
+        <div class="err" id="toIncomingErr"></div>
+        <button class="full-width-btn" onclick="handleAcceptTransfer()">Accept ownership</button>
+        <button class="full-width-btn danger-btn" onclick="handleRejectTransfer()">Decline</button>
+      `;
+    }
+
     html += `
       <div class="section-divider"></div>
       <button class="full-width-btn danger-btn" onclick="handleLeaveOrg()">Leave organization</button>
@@ -640,24 +653,101 @@ function renderOrgDetail(org, members) {
   container.innerHTML = html;
 }
 
-function renderTransferSection(members) {
+function renderTransferSection(members, transfer) {
+  // If there's already a pending transfer, show its status and a cancel button
+  if (transfer) {
+    return `
+      <p class="small-muted">Transfer pending to <strong>${escapeHtml(transfer.to_email)}</strong>. Waiting for them to accept.</p>
+      <div class="err" id="toErr"></div>
+      <button class="full-width-btn danger-btn" onclick="handleCancelTransfer()">Cancel transfer request</button>
+    `;
+  }
+
+  // No pending transfer — show the initiate form
   const others = members.filter(m => m.user_id !== (currentUser && currentUser.id));
   if (others.length === 0) {
     return '<p class="small-muted">No other members to transfer ownership to yet.</p>';
   }
+
   const options = others.map(m => `<option value="${m.user_id}">${escapeHtml(m.email)}</option>`).join('');
   return `
     <select id="toNewOwner">${options}</select>
+    <label style="display:flex; align-items:center; gap:8px; width:280px; cursor:pointer; font-size:13px; color:#555; margin-bottom:8px;">
+      <input type="checkbox" id="toConfirmCheck"> I understand I will lose ownership once they accept
+    </label>
     <div class="err" id="toErr"></div>
-    <button class="full-width-btn" onclick="handleTransferOwnership()">Transfer ownership</button>
+    <button class="full-width-btn" onclick="handleInitiateTransfer()">Send transfer request</button>
   `;
 }
 
-// ---------- Owner actions ----------
+async function handleInitiateTransfer() {
+  const select = document.getElementById('toNewOwner');
+  const checked = document.getElementById('toConfirmCheck').checked;
+  const errBox = document.getElementById('toErr');
+  errBox.style.display = 'none';
 
-async function handleRegenerateCode() {
-  const { error } = await supabaseClient.rpc('regenerate_invite_code', { p_org_id: currentOrgId });
-  if (error) { alert(error.message); return; }
+  if (!checked) {
+    errBox.textContent = 'Please check the box to confirm.';
+    errBox.style.display = 'block';
+    return;
+  }
+
+  const { error } = await supabaseClient.rpc('initiate_ownership_transfer', {
+    p_org_id: currentOrgId,
+    p_to_user_id: select.value
+  });
+
+  if (error) {
+    errBox.textContent = error.message;
+    errBox.style.display = 'block';
+    return;
+  }
+
+  await refreshOrgDetail();
+}
+
+async function handleCancelTransfer() {
+  const errBox = document.getElementById('toErr');
+  errBox.style.display = 'none';
+
+  const { error } = await supabaseClient.rpc('cancel_ownership_transfer', { p_org_id: currentOrgId });
+
+  if (error) {
+    errBox.textContent = error.message;
+    errBox.style.display = 'block';
+    return;
+  }
+
+  await refreshOrgDetail();
+}
+
+async function handleAcceptTransfer() {
+  const errBox = document.getElementById('toIncomingErr');
+  if (errBox) errBox.style.display = 'none';
+
+  const { error } = await supabaseClient.rpc('accept_ownership_transfer', { p_org_id: currentOrgId });
+
+  if (error) {
+    if (errBox) { errBox.textContent = error.message; errBox.style.display = 'block'; }
+    else alert(error.message);
+    return;
+  }
+
+  await refreshOrgDetail();
+}
+
+async function handleRejectTransfer() {
+  const errBox = document.getElementById('toIncomingErr');
+  if (errBox) errBox.style.display = 'none';
+
+  const { error } = await supabaseClient.rpc('reject_ownership_transfer', { p_org_id: currentOrgId });
+
+  if (error) {
+    if (errBox) { errBox.textContent = error.message; errBox.style.display = 'block'; }
+    else alert(error.message);
+    return;
+  }
+
   await refreshOrgDetail();
 }
 
@@ -675,22 +765,11 @@ async function handleRenameOrg() {
   await refreshOrgDetail();
 }
 
-async function handleTransferOwnership() {
-  const select = document.getElementById('toNewOwner');
-  const errBox = document.getElementById('toErr');
-  if (!select) return;
-  errBox.style.display = 'none';
+// ---------- Owner actions ----------
 
-  const { error } = await supabaseClient.rpc('transfer_ownership', {
-    p_org_id: currentOrgId,
-    p_new_owner_id: select.value
-  });
-
-  if (error) {
-    errBox.textContent = error.message;
-    errBox.style.display = 'block';
-    return;
-  }
+async function handleRegenerateCode() {
+  const { error } = await supabaseClient.rpc('regenerate_invite_code', { p_org_id: currentOrgId });
+  if (error) { alert(error.message); return; }
   await refreshOrgDetail();
 }
 
@@ -703,7 +782,7 @@ async function handleLeaveOrg() {
   await openOrgHub();
 }
 
-// ---------- Delete flow: password re-entry, then email verification ----------
+// ---------- Delete flow ----------
 
 function showDeleteStep1() {
   const flow = document.getElementById('deleteOrgFlow');
