@@ -50,7 +50,6 @@
   <h1>Quanticle — Button Test</h1>
   <button onclick="show('signIn')">Sign in</button>
   <button onclick="show('signUp')">Create account</button>
-  <button onclick="show('tester')">Sign up as a tester</button>
 </div>
 
 <!-- SIGN IN -->
@@ -141,21 +140,14 @@
     <h2 id="accountGreeting">You're signed in</h2>
     <p class="muted" id="accountEmail"></p>
     <button onclick="openOrgHub()">My Organizations</button>
+    <button onclick="show('tester')">Sign up as a tester</button>
     <button onclick="handleSignOut()">Sign out</button>
   </div>
 </div>
 
 <!-- TESTER SIGNUP -->
 <div id="tester" class="page">
-  <h2>Join as a tester</h2>
-
-  <label for="tName">Name</label>
-  <input type="text" id="tName" placeholder="Jane Smith">
-  <div class="err" id="tNameErr">Required.</div>
-
-  <label for="tEmail">Email</label>
-  <input type="email" id="tEmail" placeholder="you@university.edu">
-  <div class="err" id="tEmailErr">Enter a valid email.</div>
+  <h2>Sign up as a tester</h2>
 
   <label for="tField">Research field</label>
   <input type="text" id="tField" placeholder="e.g. Neuroscience, Economics">
@@ -166,7 +158,7 @@
 
   <button onclick="handleTester()">Apply for early access</button>
   <div class="success" id="tSuccess" style="display:none">✓ Application received! We'll be in touch.</div>
-  <span class="back" onclick="show('home')">← Back</span>
+  <span class="back" onclick="show('account')">← Back</span>
 </div>
 
 <!-- ORGANIZATIONS HUB -->
@@ -413,22 +405,14 @@ async function handleSignOut() {
 // Tester application (unrelated to login — unchanged)
 // ---------------------------------------------------------------
 async function handleTester() {
-  const name  = document.getElementById('tName').value.trim();
-  const email = document.getElementById('tEmail').value.trim();
+  const name  = (currentUser && currentUser.user_metadata && currentUser.user_metadata.first_name) || '';
+  const email = (currentUser && currentUser.email) || '';
   const field = document.getElementById('tField').value.trim();
   const why   = document.getElementById('tWhy').value.trim();
 
-  let valid = true;
-
-  const nameErr  = document.getElementById('tNameErr');
-  const emailErr = document.getElementById('tEmailErr');
   const fieldErr = document.getElementById('tFieldErr');
-
-  nameErr.style.display  = name ? 'none' : 'block';  if (!name)          valid = false;
-  emailErr.style.display = isEmail(email) ? 'none' : 'block'; if (!isEmail(email)) valid = false;
-  fieldErr.style.display = field ? 'none' : 'block'; if (!field)         valid = false;
-
-  if (!valid) return;
+  fieldErr.style.display = field ? 'none' : 'block';
+  if (!field) return;
 
   const { error } = await supabaseClient
     .from("Users")
@@ -441,7 +425,7 @@ async function handleTester() {
   }
 
   document.getElementById('tSuccess').style.display = 'block';
-  setTimeout(() => show('home'), 2000);
+  setTimeout(() => show('account'), 2000);
 }
 
 // =================================================================
@@ -673,7 +657,7 @@ function renderTransferSection(members, transfer) {
   return `
     <select id="toNewOwner">${options}</select>
     <label style="display:flex; align-items:center; gap:8px; width:280px; cursor:pointer; font-size:13px; color:#555; margin-bottom:8px;">
-      <input type="checkbox" id="toConfirmCheck"> I understand I will lose ownership once they accept
+      <input type="checkbox" id="toConfirmCheck"> I understand that ownership of this organization will be transferred once accepted by the recipient
     </label>
     <div class="err" id="toErr"></div>
     <button class="full-width-btn" onclick="handleInitiateTransfer()">Send transfer request</button>
