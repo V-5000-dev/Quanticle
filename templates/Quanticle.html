@@ -222,10 +222,6 @@ const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 let currentUser = null;
 let currentOrgId = null;
 
-// ---------------------------------------------------------------
-// Session handling — keeps the user signed in across reloads and
-// reacts automatically when an email-confirmation link signs them in.
-// ---------------------------------------------------------------
 function showAccount(user) {
   currentUser = user;
   const firstName = user.user_metadata && user.user_metadata.first_name;
@@ -253,9 +249,7 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-// ---------------------------------------------------------------
 // Google OAuth sign-in
-// ---------------------------------------------------------------
 async function signInWithGoogle() {
   if (window.location.protocol === 'file:') {
     alert('Google sign-in requires the page to be served from a web server (http:// or https://), not opened as a local file. Try hosting it or using a local server like: npx serve .');
@@ -276,9 +270,7 @@ async function signInWithGoogle() {
   }
 }
 
-// ---------------------------------------------------------------
 // Email / password sign in
-// ---------------------------------------------------------------
 async function handleSignIn() {
   const email = document.getElementById('siEmail').value.trim();
   const password = document.getElementById('siPassword').value;
@@ -300,9 +292,7 @@ async function handleSignIn() {
   showAccount(data.user);
 }
 
-// ---------------------------------------------------------------
-// Forgot password — sends a reset link to the user's email
-// ---------------------------------------------------------------
+// Forgot password
 async function handleForgotPassword() {
   const email = document.getElementById('fpEmail').value.trim();
   const errBox = document.getElementById('fpErr');
@@ -328,10 +318,8 @@ async function handleForgotPassword() {
   document.getElementById('fpSuccess').style.display = 'block';
 }
 
-// ---------------------------------------------------------------
-// Reset password — shown after the user clicks the email link,
-// which signs them into a temporary "recovery" session.
-// ---------------------------------------------------------------
+// Reset password 
+
 async function handleResetPassword() {
   const password = document.getElementById('rpPassword').value;
   const confirm = document.getElementById('rpConfirm').value;
@@ -352,10 +340,7 @@ async function handleResetPassword() {
   showAccount(data.user);
 }
 
-// ---------------------------------------------------------------
-// Create account — Supabase Auth hashes and stores the password
-// server-side; this app never sees or stores the raw password.
-// ---------------------------------------------------------------
+// Create account w Supabase Auth
 async function handleSignUp() {
   const name = document.getElementById('suName').value.trim();
   const email = document.getElementById('suEmail').value.trim();
@@ -373,7 +358,7 @@ async function handleSignUp() {
     email,
     password,
     options: {
-      data: { first_name: name },          // stored as user metadata, not in a plain table
+      data: { first_name: name },          // stored as metadata
       emailRedirectTo: window.location.origin + window.location.pathname
     }
   });
@@ -385,25 +370,19 @@ async function handleSignUp() {
   }
 
   if (data.session) {
-    // Email confirmation is disabled in the Supabase project — user is signed in immediately.
     showAccount(data.user);
   } else {
-    // Email confirmation is enabled (default) — they must confirm before they have a session.
     document.getElementById('suSuccess').style.display = 'block';
   }
 }
 
-// ---------------------------------------------------------------
 // Sign out
-// ---------------------------------------------------------------
 async function handleSignOut() {
   await supabaseClient.auth.signOut();
   show('home');
 }
+// Tester application 
 
-// ---------------------------------------------------------------
-// Tester application (unrelated to login — unchanged)
-// ---------------------------------------------------------------
 async function handleTester() {
   const name  = (currentUser && currentUser.user_metadata && currentUser.user_metadata.first_name) || '';
   const email = (currentUser && currentUser.email) || '';
@@ -428,12 +407,7 @@ async function handleTester() {
   setTimeout(() => show('account'), 2000);
 }
 
-// =================================================================
 // ORGANIZATIONS
-// All mutations go through Postgres RPC functions (see
-// organizations_schema.sql) which re-check permissions server-side —
-// the client-side checks here are just for a responsive UI.
-// =================================================================
 
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -441,7 +415,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// ---------- Hub: list of orgs the user belongs to ----------
+//list of orgs the user belongs to
 
 async function openOrgHub() {
   show('orgHub');
@@ -477,7 +451,7 @@ async function loadMyOrganizations() {
   `).join('');
 }
 
-// ---------- Create ----------
+//  Create 
 
 async function handleCreateOrg() {
   const name = document.getElementById('ocName').value;
@@ -501,7 +475,7 @@ async function handleCreateOrg() {
   await openOrgDetail(data.id);
 }
 
-// ---------- Join ----------
+//  Join 
 
 async function handleJoinOrg() {
   const code = document.getElementById('ojCode').value.trim();
@@ -534,7 +508,7 @@ async function handleJoinOrg() {
   await openOrgDetail(data.organization_id);
 }
 
-// ---------- Detail view ----------
+//  Detail view 
 
 async function openOrgDetail(orgId) {
   currentOrgId = orgId;
@@ -615,7 +589,6 @@ function renderOrgDetail(org, members, transfer) {
       </div>
     `;
   } else {
-    // Check if there's a pending transfer TO this user
     const incomingTransfer = transfer && transfer.to_user_id === (currentUser && currentUser.id);
     if (incomingTransfer) {
       html += `
@@ -638,7 +611,6 @@ function renderOrgDetail(org, members, transfer) {
 }
 
 function renderTransferSection(members, transfer) {
-  // If there's already a pending transfer, show its status and a cancel button
   if (transfer) {
     return `
       <p class="small-muted">Transfer pending to <strong>${escapeHtml(transfer.to_email)}</strong>. Waiting for them to accept.</p>
@@ -749,7 +721,7 @@ async function handleRenameOrg() {
   await refreshOrgDetail();
 }
 
-// ---------- Owner actions ----------
+//  Owner actions 
 
 async function handleRegenerateCode() {
   const { error } = await supabaseClient.rpc('regenerate_invite_code', { p_org_id: currentOrgId });
@@ -757,7 +729,7 @@ async function handleRegenerateCode() {
   await refreshOrgDetail();
 }
 
-// ---------- Member action ----------
+//  Member action 
 
 async function handleLeaveOrg() {
   if (!confirm('Leave this organization?')) return;
@@ -766,7 +738,7 @@ async function handleLeaveOrg() {
   await openOrgHub();
 }
 
-// ---------- Delete flow ----------
+//  Delete flow 
 
 function showDeleteStep1() {
   const flow = document.getElementById('deleteOrgFlow');
